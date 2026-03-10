@@ -23,7 +23,7 @@ jobs:
       - name: Compilar para Windows
         run: npm run build:win
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Subir instalador Windows
         uses: actions/upload-artifact@v4
@@ -48,7 +48,7 @@ jobs:
       - name: Compilar para Linux
         run: npm run build:linux
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Subir AppImage Linux
         uses: actions/upload-artifact@v4
