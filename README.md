@@ -37,7 +37,18 @@ A cross-platform desktop application for ElevenLabs Text-to-Speech (TTS) and Spe
 - [Node.js](https://nodejs.org/) v18 or higher
 - An [ElevenLabs](https://elevenlabs.io) account and API Key
 
-### Run locally
+### Download pre-built release (recommended)
+
+Pre-built installers for Windows and Linux are available on the [Releases page](https://github.com/YasKad/elevenlabs-gui/releases):
+
+| Platform | File |
+|---|---|
+| **Windows** | `ElevenLabs GUI Setup x.x.x.exe` |
+| **Linux** | `ElevenLabs GUI-x.x.x.AppImage` |
+
+No build tools required — just download and run.
+
+### Run locally (from source)
 
 ```bash
 git clone https://github.com/YasKad/elevenlabs-gui.git
