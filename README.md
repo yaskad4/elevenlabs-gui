@@ -25,7 +25,8 @@ A cross-platform desktop application for ElevenLabs Text-to-Speech (TTS) and Spe
 
 ## Screenshots
 
-> *(Add screenshots here)*
+<img width="898" height="1381" alt="{A61F9BC6-E832-4225-8239-B4A927282B94}" src="https://github.com/user-attachments/assets/54d93ed0-44ff-411b-bd6f-9f289737f468" />
+<img width="894" height="1007" alt="{0F871257-84B5-443D-B4C0-B7DAE7E194DD}" src="https://github.com/user-attachments/assets/c047ca34-2378-4aad-bff9-e31d922d11ba" />
 
 ---
 
