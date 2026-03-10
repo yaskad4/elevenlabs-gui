@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElevenLabs Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="titlebar"></div>
+
+  <main class="app-container">
+    <header class="hero-header">
+      <div class="lang-switch-container">
+        <select id="langSwitch" class="lang-select">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <div class="badge">PRO</div>
+      <h1 class="gradient-text"><span data-i18n="title">Neural Synthesis</span></h1>
+      <p class="subtitle" data-i18n="subtitle">Convierte texto a audio de alta fidelidad con ElevenLabs.</p>
+    </header>
+
+    <div class="cards-grid">
+      <!-- Settings Card -->
+      <section class="glass-card settings-card">
+        <div class="card-header">
+          <div class="icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <h2 data-i18n="auth_title">Autenticación</h2>
+        </div>
+        <div class="input-group">
+          <label for="apiKey" data-i18n="api_key_label">Clave API ElevenLabs</label>
+          <input type="password" id="apiKey" value="" placeholder="sk_...">
+          <span class="helper-text" data-i18n="api_key_helper">Tu clave API se almacena localmente para esta
+            sesión.</span>
+        </div>
+
+        <!-- Quota Dashboard -->
+        <div id="quotaDashboard" class="quota-dashboard" style="display:none;">
+          <div class="quota-header">
+            <span class="quota-title" data-i18n="quota_title">Saldo de Créditos</span>
+            <button id="refreshQuotaBtn" class="quota-refresh-btn" title="Actualizar">&#8635;</button>
+          </div>
+          <div id="quotaError" class="quota-error" style="display:none;"></div>
+          <div id="quotaContent">
+            <div class="quota-stats">
+              <div class="quota-stat">
+                <div class="quota-stat-label" data-i18n="quota_remaining">Restantes</div>
+                <div class="quota-stat-value" id="quotaUsed">—</div>
+              </div>
+              <div class="quota-divider"></div>
+              <div class="quota-stat">
+                <div class="quota-stat-label" data-i18n="quota_limit">Límite</div>
+                <div class="quota-stat-value" id="quotaLimit">—</div>
+              </div>
+              <div class="quota-divider"></div>
+              <div class="quota-stat">
+                <div class="quota-stat-label" data-i18n="quota_renewal">Renovación</div>
+                <div class="quota-stat-value" id="quotaRenewal">—</div>
+              </div>
+            </div>
+            <div class="quota-bar-wrap">
+              <div class="quota-bar-fill" id="quotaBarFill"></div>
+            </div>
+            <div class="quota-tier" id="quotaTier"></div>
+          </div> <!-- end quotaContent -->
+        </div> <!-- end quotaDashboard -->
+      </section>
+
+      <!-- Tabs Navigation -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="tts" data-i18n="tab_tts">Texto a Audio (TTS)</button>
+        <button class="tab-btn" data-tab="stt" data-i18n="tab_stt">Audio a Texto (STT)</button>
+      </div>
+
+      <!-- TTS Tab Content (Default) -->
+      <div id="ttsTab" class="tab-content active">
+
+        <!-- Settings Panel -->
+        <section class="glass-card settings-panel">
+          <div class="card-header">
+            <div class="icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+              </svg>
+            </div>
+            <h2 data-i18n="settings_title">Ajustes de Voz</h2>
+          </div>
+
+          <!-- Voice and Model Selection -->
+          <div class="dropdowns-grid">
+            <div class="input-group">
+              <label for="modelSelect" data-i18n="model_label">Modelo</label>
+              <select id="modelSelect" class="custom-select">
+                <option value="eleven_multilingual_v2" selected>Eleven Multilingual v2</option>
+                <option value="eleven_multilingual_v1">Eleven Multilingual v1</option>
+                <option value="eleven_monolingual_v1">Eleven Monolingual v1</option>
+                <option value="eleven_turbo_v2">Eleven Turbo v2</option>
+                <option value="eleven_turbo_v2_5">Eleven Turbo v2.5</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="voiceSelect" data-i18n="voice_label">Voz</label>
+              <select id="voiceSelect" class="custom-select">
+                <option value="" selected disabled>-- Seleccione una voz --</option>
+                <option value="21m00Tcm4TlvDq8ikWAM">Rachel</option>
+                <option value="AZnzlk1XvdvUeBnXmlld">Domi</option>
+                <option value="EXAVITQu4vr4xnSDxMaL">Bella</option>
+                <option value="ErXwobaYiN019PkySvjV">Antoni</option>
+                <option value="MF3mGyEYCl7XYWbV9V6O">Elli</option>
+                <option value="TxGEqnHWrfWFTfGW9XjX">Josh</option>
+                <option value="custom">-- Pegar ID Personalizado --</option>
+              </select>
+              <input type="password" id="customVoiceInput" placeholder="Pega el ID de la Voz..."
+                style="display: none; margin-top: 8px;" class="custom-select">
+            </div>
+          </div>
+
+          <div class="sliders-grid" style="margin-top: 20px;">
+            <div class="input-group">
+              <label for="stabilitySlider"><span data-i18n="stability">Estabilidad</span> (<span
+                  id="stabilityVal">0.45</span>)</label>
+              <input type="range" id="stabilitySlider" min="0" max="1" step="0.05" value="0.45" class="custom-slider">
+            </div>
+            <div class="input-group">
+              <label for="similaritySlider"><span data-i18n="similarity">Similitud</span> (<span
+                  id="similarityVal">0.75</span>)</label>
+              <input type="range" id="similaritySlider" min="0" max="1" step="0.05" value="0.75" class="custom-slider">
+            </div>
+            <div class="input-group">
+              <label for="styleSlider"><span data-i18n="style_exagg">Estilo</span> (<span
+                  id="styleVal">0.05</span>)</label>
+              <input type="range" id="styleSlider" min="0" max="1" step="0.05" value="0.05" class="custom-slider">
+            </div>
+          </div>
+
+          <div class="toggles-grid">
+            <label class="toggle-container">
+              <input type="checkbox" id="speakerBoostToggle" checked>
+              <span class="custom-toggle"></span>
+              <span data-i18n="speaker_boost">Mejora de altavoz</span>
+            </label>
+
+            <label class="toggle-container">
+              <input type="checkbox" id="phoneticToggle">
+              <span class="custom-toggle"></span>
+              <span data-i18n="phonetic_toggle">Traducir siglas a fonética (Ej: MCP -> emecepe)</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Input Card -->
+        <section class="glass-card input-card" id="inputCard">
+          <div class="card-header">
+            <div class="icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <h2 data-i18n="input_title">Entrada de Texto</h2>
+          </div>
+          <div class="file-selector">
+            <button id="selectFileBtn" class="btn-secondary">
+              <span data-i18n="choose_file">Elegir archivo .txt</span>
+            </button>
+            <div class="file-path-display" id="filePathDisplay" data-i18n="no_file">Ningún archivo seleccionado</div>
+          </div>
+
+          <div class="preview-area" id="previewArea" style="display: none;">
+            <div class="preview-header">
+              <label data-i18n="preview_label">Vista Previa:</label>
+              <span class="char-count" id="charCount">0 caracteres</span>
+            </div>
+            <textarea id="filePreview" readonly></textarea>
+          </div>
+        </section>
+
+        <!-- Action area moved perfectly inside TTS Tab -->
+        <div class="action-area" style="flex-direction: column; gap: 8px;">
+          <div id="costBadge" class="cost-badge hidden"></div>
+          <button id="generateBtn" class="btn-primary glow-effect" disabled>
+            <span class="btn-text" data-i18n="generate_btn">Generar Audio</span>
+            <div class="spinner" id="spinner"></div>
+          </button>
+        </div>
+      </div> <!-- End TTS Tab Content -->
+
+      <!-- Feedback Toast (Moved outside of Tabs to be global) -->
+      <div id="toast" class="toast hidden">
+        <div class="toast-flex">
+          <div class="toast-icon"></div>
+          <div class="toast-message" id="toastMessage"></div>
+        </div>
+        <div id="toastActions" class="toast-actions hidden">
+          <button id="openFolderBtn" class="btn-secondary small-btn" data-i18n="open_folder">Abrir Carpeta</button>
+        </div>
+      </div>
+      <!-- STT Tab Content -->
+      <div id="sttTab" class="tab-content" style="display: none;">
+        <!-- Input Card -->
+        <section class="glass-card input-card" id="sttInputCard">
+          <div class="card-header">
+            <div class="icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+              </svg>
+            </div>
+            <h2 data-i18n="stt_input_title">Entrada de Audio</h2>
+          </div>
+          <div class="file-selector">
+            <button id="selectAudioBtn" class="btn-secondary">
+              <span data-i18n="choose_audio">Elegir archivo (MP3, WAV, M4A)</span>
+            </button>
+            <div class="file-path-display" id="audioPathDisplay" data-i18n="no_file">Ningún archivo seleccionado</div>
+          </div>
+        </section>
+
+        <div class="action-area">
+          <button id="transcribeBtn" class="btn-primary glow-effect" disabled>
+            <span class="btn-text" data-i18n="transcribe_btn">Transcribir Audio</span>
+            <div class="spinner" id="sttSpinner"></div>
+          </button>
+        </div>
+      </div> <!-- End STT Tab Content -->
+
+    </div> <!-- End Cards Grid -->
+  </main>
+
+  <script src="renderer.js"></script>
+</body>
+
+</html>

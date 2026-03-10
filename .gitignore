@@ -1,0 +1,16 @@
+# Dependencias de Node.js (no se suben al repositorio)
+node_modules/
+
+# Carpeta de builds generados
+dist/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Variables de entorno (si llegaras a usar un .env)
+.env
+
+# Logs
+*.log
+npm-debug.log*

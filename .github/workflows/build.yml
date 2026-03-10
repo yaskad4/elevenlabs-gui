@@ -1,0 +1,73 @@
+name: Build ElevenLabs GUI
+
+# Se dispara cuando creas un tag de versión (ej: v1.0.0)
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout código fuente
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Compilar para Windows
+        run: npm run build:win
+
+      - name: Subir instalador Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-Installer
+          path: dist/*.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código fuente
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Compilar para Linux
+        run: npm run build:linux
+
+      - name: Subir AppImage Linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux-AppImage
+          path: dist/*.AppImage
+
+  # Crea un Release oficial en GitHub con ambos binarios al finalizar
+  release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar todos los artefactos
+        uses: actions/download-artifact@v4
+        with:
+          path: release-files
+          merge-multiple: true
+
+      - name: Crear Release en GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/**/*
+          generate_release_notes: true
