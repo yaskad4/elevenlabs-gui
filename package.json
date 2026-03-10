@@ -9,8 +9,8 @@
     "build:linux": "electron-builder --linux",
     "build:all": "electron-builder --win --linux"
   },
-  "author": "Antigravity",
-  "license": "ISC",
+  "author": "YasKad makerhispano@gmail.com",
+  "license": "MIT",
   "build": {
     "appId": "com.elevenlabs.gui",
     "productName": "ElevenLabs GUI",
