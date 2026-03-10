@@ -35,7 +35,8 @@ A cross-platform desktop application for ElevenLabs Text-to-Speech (TTS) and Spe
 ### Requirements
 
 - [Node.js](https://nodejs.org/) v18 or higher (only for running from source)
-- An [ElevenLabs](https://elevenlabs.io) account and API Key
+- An [ElevenLabs]([https://elevenlabs.io](https://try.elevenlabs.io/yb7d1di48ww0)) account and API Key
+> 💡 **Note:** The ElevenLabs link above is an affiliate link. If you sign up through it, you'll support this project at absolutely no extra cost to you. Thank you! 🙏
 
 ### Download pre-built release (recommended)
 
