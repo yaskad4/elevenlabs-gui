@@ -1,6 +1,5 @@
 name: Build ElevenLabs GUI
 
-# Se dispara cuando creas un tag de versión (ej: v1.0.0)
 on:
   push:
     tags:
@@ -23,6 +22,8 @@ jobs:
 
       - name: Compilar para Windows
         run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Subir instalador Windows
         uses: actions/upload-artifact@v4
@@ -46,6 +47,8 @@ jobs:
 
       - name: Compilar para Linux
         run: npm run build:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Subir AppImage Linux
         uses: actions/upload-artifact@v4
@@ -53,7 +56,6 @@ jobs:
           name: Linux-AppImage
           path: dist/*.AppImage
 
-  # Crea un Release oficial en GitHub con ambos binarios al finalizar
   release:
     needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
