@@ -9,7 +9,10 @@
     "build:linux": "electron-builder --linux",
     "build:all": "electron-builder --win --linux"
   },
-  "author": "YasKad makerhispano@gmail.com",
+  "author": {
+    "name": "YasKad",
+    "email": "makerhispano@gmail.com"
+  },
   "license": "MIT",
   "build": {
     "appId": "com.elevenlabs.gui",
