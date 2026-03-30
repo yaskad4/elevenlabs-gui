@@ -25,6 +25,14 @@
       <div class="badge">PRO</div>
       <h1 class="gradient-text"><span data-i18n="title">Neural Synthesis</span></h1>
       <p class="subtitle" data-i18n="subtitle">Convierte texto a audio de alta fidelidad con ElevenLabs.</p>
+      <!-- Version & Update indicator -->
+      <div class="version-row">
+        <span id="versionBadge" class="version-badge">v…</span>
+        <a id="updateBadge" class="update-badge hidden" href="#" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span data-i18n="update_available">Nueva versión disponible</span>
+        </a>
+      </div>
     </header>
 
     <div class="cards-grid">
@@ -106,8 +114,14 @@
               </svg>
             </div>
             <h2 data-i18n="settings_title">Ajustes de Voz</h2>
+            <button id="settingsToggleBtn" class="auth-toggle-btn" title="Mostrar/Ocultar">
+              <svg id="settingsChevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
           </div>
 
+          <div id="settingsBody">
           <!-- Voice and Model Selection -->
           <div class="dropdowns-grid">
             <div class="input-group">
@@ -169,6 +183,7 @@
               <span data-i18n="phonetic_toggle">Traducir siglas a fonética (Ej: MCP -> emecepe)</span>
             </label>
           </div>
+          </div> <!-- end settingsBody -->
         </section>
 
         <!-- Input Card -->
@@ -190,6 +205,11 @@
             <button id="selectFileBtn" class="btn-secondary">
               <span data-i18n="choose_file">Elegir archivo .txt</span>
             </button>
+            <!-- Feature 3: Paste from Clipboard -->
+            <button id="pasteClipboardBtn" class="btn-secondary btn-clipboard" title="Pegar desde portapapeles">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              <span data-i18n="paste_clipboard">Pegar Portapapeles</span>
+            </button>
             <div class="file-path-display" id="filePathDisplay" data-i18n="no_file">Ningún archivo seleccionado</div>
           </div>
 
@@ -198,11 +218,12 @@
               <label data-i18n="preview_label">Vista Previa:</label>
               <span class="char-count" id="charCount">0 caracteres</span>
             </div>
-            <textarea id="filePreview" readonly></textarea>
+            <!-- Feature 4: editable textarea (removed readonly) -->
+            <textarea id="filePreview"></textarea>
           </div>
         </section>
 
-        <!-- Action area moved perfectly inside TTS Tab -->
+        <!-- Action area -->
         <div class="action-area" style="flex-direction: column; gap: 8px;">
           <div id="costBadge" class="cost-badge hidden"></div>
           <button id="generateBtn" class="btn-primary glow-effect" disabled>
@@ -210,9 +231,26 @@
             <div class="spinner" id="spinner"></div>
           </button>
         </div>
+
+        <!-- Feature 5: TTS History -->
+        <section class="glass-card history-card" id="ttsHistoryCard" style="display:none;">
+          <div class="card-header">
+            <div class="icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h2 data-i18n="history_tts_title">Historial TTS</h2>
+            <button id="clearTtsHistoryBtn" class="clear-history-btn" title="Limpiar historial">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+          <div id="ttsHistoryList" class="history-list"></div>
+          <!-- hidden audio player -->
+          <audio id="ttsAudioPlayer" style="display:none;"></audio>
+        </section>
+
       </div> <!-- End TTS Tab Content -->
 
-      <!-- Feedback Toast (Moved outside of Tabs to be global) -->
+      <!-- Feedback Toast (global) -->
       <div id="toast" class="toast hidden">
         <div class="toast-flex">
           <div class="toast-icon"></div>
@@ -222,6 +260,7 @@
           <button id="openFolderBtn" class="btn-secondary small-btn" data-i18n="open_folder">Abrir Carpeta</button>
         </div>
       </div>
+
       <!-- STT Tab Content -->
       <div id="sttTab" class="tab-content" style="display: none;">
         <!-- Input Card -->
@@ -252,6 +291,22 @@
             <div class="spinner" id="sttSpinner"></div>
           </button>
         </div>
+
+        <!-- Feature 6: STT History -->
+        <section class="glass-card history-card" id="sttHistoryCard" style="display:none;">
+          <div class="card-header">
+            <div class="icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h2 data-i18n="history_stt_title">Historial STT</h2>
+            <button id="clearSttHistoryBtn" class="clear-history-btn" title="Limpiar historial">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+          <div id="sttHistoryList" class="history-list"></div>
+          <audio id="sttAudioPlayer" style="display:none;"></audio>
+        </section>
+
       </div> <!-- End STT Tab Content -->
 
     </div> <!-- End Cards Grid -->

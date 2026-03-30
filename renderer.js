@@ -9,7 +9,8 @@ const toast = document.getElementById('toast');
 const toastMessage = document.getElementById('toastMessage');
 const toastActions = document.getElementById('toastActions');
 const openFolderBtn = document.getElementById('openFolderBtn');
-const inputCard = document.getElementById('inputCard'); // Added for drag and drop
+const inputCard = document.getElementById('inputCard');
+const pasteClipboardBtn = document.getElementById('pasteClipboardBtn');
 
 // STT Elements
 const sttInputCard = document.getElementById('sttInputCard');
@@ -45,11 +46,30 @@ const quotaBarFill = document.getElementById('quotaBarFill');
 const quotaTier = document.getElementById('quotaTier');
 const costBadge = document.getElementById('costBadge');
 
+// History Elements
+const ttsHistoryCard = document.getElementById('ttsHistoryCard');
+const ttsHistoryList = document.getElementById('ttsHistoryList');
+const ttsAudioPlayer = document.getElementById('ttsAudioPlayer');
+const clearTtsHistoryBtn = document.getElementById('clearTtsHistoryBtn');
+
+const sttHistoryCard = document.getElementById('sttHistoryCard');
+const sttHistoryList = document.getElementById('sttHistoryList');
+const sttAudioPlayer = document.getElementById('sttAudioPlayer');
+const clearSttHistoryBtn = document.getElementById('clearSttHistoryBtn');
+
 // State
 let currentFilePath = null; // for TTS
 let currentAudioPath = null; // for STT
 let lastGeneratedDir = null;
 let currentTab = 'tts';
+
+// History arrays (session-only)
+let ttsHistory = [];  // { filename, paths, timestamp, voiceName }
+let sttHistory = [];  // { audioFilename, audioPath, transcriptionPath, text, timestamp }
+
+// Currently playing tracker
+let currentlyPlayingTtsBtn = null;
+let currentlyPlayingSttBtn = null;
 
 // i18n Dictionary
 const translations = {
@@ -71,6 +91,7 @@ const translations = {
         phonetic_toggle: "Traducir siglas a fonética (Ej: MCP -> emecepe)",
         input_title: "Entrada de Texto",
         choose_file: "Elegir archivo .txt",
+        paste_clipboard: "Pegar Portapapeles",
         no_file: "Ningún archivo seleccionado",
         preview_label: "Vista Previa:",
         generate_btn: "Generar Audio",
@@ -92,7 +113,18 @@ const translations = {
         success_multi: "¡Hecho! Texto dividido en {count} partes de audio.",
         success_single: "¡Hecho! Audio guardado en:\n{path}",
         success_stt: "¡Hecho! Transcripción guardada en:\n{path}",
-        err_gen: "Error inesperado"
+        err_gen: "Error inesperado",
+        update_available: "Nueva versión disponible",
+        history_tts_title: "Historial TTS",
+        history_stt_title: "Historial STT",
+        err_clipboard: "No se pudo leer el portapapeles.",
+        err_clipboard_empty: "El portapapeles está vacío.",
+        clipboard_loaded: "Texto del portapapeles cargado.",
+        play: "Reproducir",
+        stop: "Detener",
+        history_parts: "parte(s)",
+        history_audio: "Audio fuente",
+        history_transcription: "Transcripción"
     },
     en: {
         title: "Neural Synthesis",
@@ -112,6 +144,7 @@ const translations = {
         phonetic_toggle: "Translate acronyms to Spanish phonetics (e.g. MCP -> emecepe)",
         input_title: "Script Input",
         choose_file: "Choose .txt File",
+        paste_clipboard: "Paste Clipboard",
         no_file: "No file selected",
         preview_label: "Content Preview:",
         generate_btn: "Generate Audio",
@@ -133,7 +166,18 @@ const translations = {
         success_multi: "Done! Text split into {count} audio parts.",
         success_single: "Done! Audio saved to:\n{path}",
         success_stt: "Done! Transcription saved to:\n{path}",
-        err_gen: "Unexpected error"
+        err_gen: "Unexpected error",
+        update_available: "New version available",
+        history_tts_title: "TTS History",
+        history_stt_title: "STT History",
+        err_clipboard: "Could not read clipboard.",
+        err_clipboard_empty: "Clipboard is empty.",
+        clipboard_loaded: "Clipboard text loaded.",
+        play: "Play",
+        stop: "Stop",
+        history_parts: "part(s)",
+        history_audio: "Source audio",
+        history_transcription: "Transcription"
     }
 };
 
@@ -182,14 +226,12 @@ voiceSelect.addEventListener('change', (e) => {
 // Handle Tab Switching
 tabsNav.forEach(btn => {
     btn.addEventListener('click', () => {
-        // Remove active class from all
         tabsNav.forEach(t => t.classList.remove('active'));
         tabContents.forEach(c => {
             c.classList.remove('active');
             c.style.display = 'none';
         });
 
-        // Add active to clicked
         btn.classList.add('active');
         const tabId = btn.getAttribute('data-tab');
         currentTab = tabId;
@@ -197,11 +239,9 @@ tabsNav.forEach(btn => {
         targetContent.classList.add('active');
         targetContent.style.display = 'flex';
 
-        // Update subtitle based on active tab
         const subtitle = document.querySelector('.subtitle');
         subtitle.textContent = translations[currentLang][tabId === 'stt' ? 'subtitle_stt' : 'subtitle_tts'];
 
-        // Disable Settings panel if we are in STT (Scribe has no settings currently)
         const settingsPanel = document.querySelector('.settings-panel');
         if (tabId === 'stt') {
             settingsPanel.style.display = 'none';
@@ -216,33 +256,38 @@ async function loadFile(filePath) {
     try {
         currentFilePath = filePath;
 
-        // Update UI with file path (truncate for display if too long)
         const fileName = filePath.split('\\').pop().split('/').pop();
         filePathDisplay.textContent = fileName;
-        filePathDisplay.title = filePath; // Show full path on hover
+        filePathDisplay.title = filePath;
 
-        // Read and show preview
         const content = await window.electronAPI.readFile(filePath);
         filePreview.value = content;
 
-        const charCount = document.getElementById('charCount');
-        charCount.textContent = `${content.length} caracteres`;
-        if (content.length > 5000) {
-            charCount.classList.add('warning');
-            charCount.textContent += ' (Se dividirá en varias partes)';
-        } else {
-            charCount.classList.remove('warning');
-        }
-
+        refreshCharCount();
         previewArea.style.display = 'block';
-
-        // Update cost estimate badge
         updateCostBadge(content.length);
-
-        // Enable generation if we have a file and API key
         updateGenerateButtonStatus();
     } catch (error) {
         showToast(`${translations[currentLang].err_open}: ${error.message}`, 'error');
+    }
+}
+
+// Feature 4: live char count on textarea edit
+filePreview.addEventListener('input', () => {
+    refreshCharCount();
+    updateCostBadge(filePreview.value.length);
+    updateGenerateButtonStatus();
+});
+
+function refreshCharCount() {
+    const charCount = document.getElementById('charCount');
+    const len = filePreview.value.length;
+    charCount.textContent = `${len} caracteres`;
+    if (len > 5000) {
+        charCount.classList.add('warning');
+        charCount.textContent += ' (Se dividirá en varias partes)';
+    } else {
+        charCount.classList.remove('warning');
     }
 }
 
@@ -255,6 +300,28 @@ selectFileBtn.addEventListener('click', async () => {
         }
     } catch (error) {
         showToast(`${translations[currentLang].err_open}: ${error.message}`, 'error');
+    }
+});
+
+// Feature 3: Paste from clipboard
+pasteClipboardBtn.addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (!text || !text.trim()) {
+            showToast(translations[currentLang].err_clipboard_empty, 'error');
+            return;
+        }
+
+        // Save to temp file and load via existing flow
+        const result = await window.electronAPI.saveTempText(text);
+        if (result.success) {
+            await loadFile(result.filePath);
+            showToast(translations[currentLang].clipboard_loaded, 'success');
+        } else {
+            showToast(`${translations[currentLang].err_clipboard}: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        showToast(`${translations[currentLang].err_clipboard}: ${error.message}`, 'error');
     }
 });
 
@@ -280,7 +347,6 @@ inputCard.addEventListener('drop', async (e) => {
     if (files.length > 0) {
         const file = files[0];
         if (file.name.endsWith('.txt')) {
-            // Electron provides the absolute path on the File object
             await loadFile(file.path);
         } else {
             showToast(translations[currentLang].err_drop, "error");
@@ -291,27 +357,36 @@ inputCard.addEventListener('drop', async (e) => {
 apiKeyInput.addEventListener('input', updateGenerateButtonStatus);
 
 generateBtn.addEventListener('click', async () => {
-    if (!currentFilePath) return;
     const apiKey = apiKeyInput.value.trim();
-
     if (!apiKey) {
         showToast(translations[currentLang].err_key, "error");
         return;
     }
 
-    // Set loading state
+    // Feature 4: use current textarea content instead of always re-reading from disk
+    const textContent = filePreview.value;
+    if (!textContent || !textContent.trim()) {
+        showToast("El texto está vacío.", "error");
+        return;
+    }
+
     generateBtn.classList.add('loading');
     generateBtn.disabled = true;
     selectFileBtn.disabled = true;
+    pasteClipboardBtn.disabled = true;
     apiKeyInput.disabled = true;
-    toastActions.classList.add('hidden'); // hide folder button when starting a new generation
+    toastActions.classList.add('hidden');
 
-    // Get active Voice ID
     let voiceId = voiceSelect.value;
     if (voiceId === 'custom') {
         voiceId = customVoiceInput.value.trim();
         if (!voiceId) {
-            showToast("Por favor ingresa un ID de voz personalizado.", "error"); // Generic fallback error
+            showToast("Por favor ingresa un ID de voz personalizado.", "error");
+            generateBtn.classList.remove('loading');
+            generateBtn.disabled = false;
+            selectFileBtn.disabled = false;
+            pasteClipboardBtn.disabled = false;
+            apiKeyInput.disabled = false;
             return;
         }
     }
@@ -329,12 +404,13 @@ generateBtn.addEventListener('click', async () => {
     try {
         const result = await window.electronAPI.generateAudio({
             filePath: currentFilePath,
+            textContent: textContent,     // Feature 4: pass edited text directly
             apiKey: apiKey,
             options: options
         });
 
         if (result.success) {
-            lastGeneratedDir = result.savedPath; // save path to open later
+            lastGeneratedDir = result.savedPath;
             toastActions.classList.remove('hidden');
 
             if (result.savedPaths && result.savedPaths.length > 1) {
@@ -342,16 +418,25 @@ generateBtn.addEventListener('click', async () => {
             } else {
                 showToast(translations[currentLang].success_single.replace('{path}', result.savedPath), 'success');
             }
+
+            // Feature 5: add to TTS history
+            const voiceName = voiceSelect.options[voiceSelect.selectedIndex]?.text || voiceId;
+            addTtsHistoryEntry({
+                filename: result.savedPath.split('\\').pop().split('/').pop(),
+                paths: result.savedPaths,
+                timestamp: new Date().toLocaleTimeString(),
+                voiceName
+            });
         } else {
             showToast(`Error: ${result.error}`, 'error');
         }
     } catch (error) {
         showToast(`${translations[currentLang].err_gen}: ${error.message}`, 'error');
     } finally {
-        // Reset loading state
         generateBtn.classList.remove('loading');
         generateBtn.disabled = false;
         selectFileBtn.disabled = false;
+        pasteClipboardBtn.disabled = false;
         apiKeyInput.disabled = false;
     }
 });
@@ -364,7 +449,6 @@ async function loadAudioFile(filePath) {
     audioPathDisplay.title = filePath;
     updateGenerateButtonStatus();
 
-    // Estimate cost from file size
     try {
         const info = await window.electronAPI.getFileInfo(filePath);
         if (info && info.success) {
@@ -436,9 +520,23 @@ transcribeBtn.addEventListener('click', async () => {
         });
 
         if (result.success) {
-            lastGeneratedDir = result.savedPath; // save path to open later
+            lastGeneratedDir = result.savedPath;
             toastActions.classList.remove('hidden');
             showToast(translations[currentLang].success_stt.replace('{path}', result.savedPath), 'success');
+
+            // Feature 6: read transcript text and add to STT history
+            let transcriptText = '';
+            try {
+                transcriptText = await window.electronAPI.readFile(result.savedPath);
+            } catch (_) {}
+
+            addSttHistoryEntry({
+                audioFilename: currentAudioPath.split('\\').pop().split('/').pop(),
+                audioPath: currentAudioPath,
+                transcriptionPath: result.savedPath,
+                text: transcriptText,
+                timestamp: new Date().toLocaleTimeString()
+            });
         } else {
             showToast(`Error: ${result.error}`, 'error');
         }
@@ -462,15 +560,13 @@ openFolderBtn.addEventListener('click', () => {
 // Helpers
 function updateGenerateButtonStatus() {
     const hasKey = apiKeyInput.value.trim().length > 0;
-
-    // Check if TTS voice is selected
+    const hasText = filePreview.value.trim().length > 0;
     const voiceSelected = voiceSelect.value !== "" && (voiceSelect.value !== "custom" || customVoiceInput.value.trim().length > 0);
 
-    generateBtn.disabled = !(currentFilePath && hasKey && voiceSelected);
+    generateBtn.disabled = !(hasText && hasKey && voiceSelected);
     transcribeBtn.disabled = !(currentAudioPath && hasKey);
 }
 
-// Re-evaluate button status when voice selection changes
 voiceSelect.addEventListener('change', updateGenerateButtonStatus);
 customVoiceInput.addEventListener('input', updateGenerateButtonStatus);
 
@@ -486,7 +582,6 @@ function saveSettings() {
 apiKeyInput.addEventListener('input', () => {
     saveSettings();
     updateGenerateButtonStatus();
-    // Trigger quota fetch when key changes with a small debounce
     clearTimeout(window.subscriptionDebounce);
     window.subscriptionDebounce = setTimeout(fetchAndUpdateQuota, 800);
 });
@@ -505,7 +600,6 @@ function loadSettings() {
     const savedKey = localStorage.getItem('elevenlabs_api_key');
     if (savedKey) {
         apiKeyInput.value = savedKey;
-        // Fetch quota on load if key exists
         fetchAndUpdateQuota();
     }
 
@@ -535,7 +629,6 @@ async function fetchAndUpdateQuota() {
         return;
     }
 
-    // Show panel immediately (loading state)
     quotaDashboard.style.display = 'block';
     quotaError.style.display = 'none';
     quotaContent.style.display = 'block';
@@ -562,7 +655,6 @@ async function fetchAndUpdateQuota() {
             quotaBarFill.style.width = `${pct}%`;
             quotaBarFill.title = `Usados: ${used.toLocaleString()} créditos`;
 
-            // Color bar based on usage
             if (pct > 90) {
                 quotaBarFill.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
             } else if (pct > 70) {
@@ -579,7 +671,6 @@ async function fetchAndUpdateQuota() {
             quotaError.style.display = 'none';
             quotaContent.style.display = 'block';
 
-            // Auto-collapse auth card on successful authentication
             collapseAuthCard();
         } else {
             quotaContent.style.display = 'none';
@@ -619,16 +710,38 @@ authToggleBtn.addEventListener('click', () => {
     }
 });
 
+// Settings Panel Collapse/Expand
+const settingsBody = document.getElementById('settingsBody');
+const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+let settingsCollapsed = false;
+collapseSettingsCard();
+
+function collapseSettingsCard() {
+    if (settingsCollapsed) return;
+    settingsCollapsed = true;
+    settingsBody.style.display = 'none';
+    settingsToggleBtn.classList.add('collapsed');
+}
+
+function expandSettingsCard() {
+    settingsCollapsed = false;
+    settingsBody.style.display = 'block';
+    settingsToggleBtn.classList.remove('collapsed');
+}
+
+settingsToggleBtn.addEventListener('click', () => {
+    if (settingsCollapsed) {
+        expandSettingsCard();
+    } else {
+        collapseSettingsCard();
+    }
+});
+
 function updateSttCostBadge(sizeBytes) {
-    // Estimate duration: assume 128 kbps MP3 as a general baseline
-    // 128 kbps = 16000 bytes/s → seconds ≈ size / 16000
     const estimatedSeconds = sizeBytes / 16000;
     const estimatedMins = estimatedSeconds / 60;
-    // ElevenLabs Scribe: 1000 credits per minute
     const estimatedCredits = Math.ceil(estimatedMins * 1000);
-    const minsDisplay = estimatedMins < 1
-        ? `< 1`
-        : estimatedMins.toFixed(1);
+    const minsDisplay = estimatedMins < 1 ? `< 1` : estimatedMins.toFixed(1);
 
     const label = translations[currentLang].stt_cost_label
         .replace('{credits}', estimatedCredits.toLocaleString())
@@ -649,21 +762,236 @@ function updateCostBadge(charCount) {
 
 function showToast(message, type = 'success') {
     toastMessage.textContent = message;
-
     toast.className = 'toast show';
     toast.classList.add(type);
 
-    // clear any existing timeout so we don't prematurely hide
     if (window.toastTimeout) {
         clearTimeout(window.toastTimeout);
     }
 
-    // Hide after 7 seconds, give time to click 'open folder'
     window.toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
     }, 7000);
 }
 
-// Initialize
+// ─── Feature 2: Version badge & update check ───────────────────────────────
+async function initVersionCheck() {
+    try {
+        const version = await window.electronAPI.getAppVersion();
+        document.getElementById('versionBadge').textContent = `v${version}`;
+
+        const updateResult = await window.electronAPI.checkForUpdates();
+        if (updateResult.success && updateResult.latestTag) {
+            const latest = updateResult.latestTag.replace(/^v/, '');
+            const current = version.replace(/^v/, '');
+            if (latest !== current) {
+                const badge = document.getElementById('updateBadge');
+                badge.classList.remove('hidden');
+                badge.href = updateResult.htmlUrl || 'https://github.com/yaskad4/elevenlabs-gui/releases';
+            }
+        }
+    } catch (e) {
+        // silently fail
+    }
+}
+
+// ─── Feature 5: TTS History ────────────────────────────────────────────────
+function addTtsHistoryEntry(entry) {
+    ttsHistory.unshift(entry);
+    renderTtsHistory();
+    ttsHistoryCard.style.display = 'block';
+}
+
+function renderTtsHistory() {
+    ttsHistoryList.innerHTML = '';
+    ttsHistory.forEach((entry, idx) => {
+        const row = document.createElement('div');
+        row.className = 'history-entry';
+
+        const info = document.createElement('div');
+        info.className = 'history-info';
+
+        const name = document.createElement('span');
+        name.className = 'history-filename';
+        name.textContent = entry.filename;
+        name.title = entry.paths ? entry.paths.join('\n') : entry.filename;
+
+        const meta = document.createElement('span');
+        meta.className = 'history-meta';
+        const partsText = entry.paths && entry.paths.length > 1
+            ? ` · ${entry.paths.length} ${translations[currentLang].history_parts}`
+            : '';
+        meta.textContent = `${entry.timestamp} · ${entry.voiceName}${partsText}`;
+
+        info.appendChild(name);
+        info.appendChild(meta);
+
+        // Play buttons (one per audio part)
+        const controls = document.createElement('div');
+        controls.className = 'history-controls';
+
+        const paths = entry.paths || [];
+        paths.forEach((audioPath, partIdx) => {
+            const playBtn = document.createElement('button');
+            playBtn.className = 'play-btn';
+            const partLabel = paths.length > 1 ? ` ${partIdx + 1}` : '';
+            playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${translations[currentLang].play}${partLabel}</span>`;
+            playBtn.setAttribute('data-path', audioPath);
+
+            playBtn.addEventListener('click', async () => {
+                // Stop if currently playing this button
+                if (playBtn.classList.contains('playing')) {
+                    ttsAudioPlayer.pause();
+                    ttsAudioPlayer.src = '';
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${translations[currentLang].play}${partLabel}</span>`;
+                    currentlyPlayingTtsBtn = null;
+                    return;
+                }
+
+                // Stop any other playing button
+                if (currentlyPlayingTtsBtn) {
+                    ttsAudioPlayer.pause();
+                    ttsAudioPlayer.src = '';
+                    currentlyPlayingTtsBtn.classList.remove('playing');
+                    const prevPartLabel = currentlyPlayingTtsBtn.querySelector('span').textContent.replace(translations[currentLang].stop, translations[currentLang].play);
+                    currentlyPlayingTtsBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${prevPartLabel}</span>`;
+                }
+
+                // Load and play
+                playBtn.disabled = true;
+                const result = await window.electronAPI.getAudioBase64(audioPath);
+                playBtn.disabled = false;
+                if (!result.success) {
+                    showToast('Error al reproducir audio.', 'error');
+                    return;
+                }
+
+                ttsAudioPlayer.src = result.dataUrl;
+                ttsAudioPlayer.play();
+                playBtn.classList.add('playing');
+                playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span>${translations[currentLang].stop}${partLabel}</span>`;
+                currentlyPlayingTtsBtn = playBtn;
+
+                ttsAudioPlayer.onended = () => {
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${translations[currentLang].play}${partLabel}</span>`;
+                    currentlyPlayingTtsBtn = null;
+                };
+            });
+
+            controls.appendChild(playBtn);
+        });
+
+        row.appendChild(info);
+        row.appendChild(controls);
+        ttsHistoryList.appendChild(row);
+    });
+}
+
+clearTtsHistoryBtn.addEventListener('click', () => {
+    ttsAudioPlayer.pause();
+    ttsAudioPlayer.src = '';
+    currentlyPlayingTtsBtn = null;
+    ttsHistory = [];
+    ttsHistoryList.innerHTML = '';
+    ttsHistoryCard.style.display = 'none';
+});
+
+// ─── Feature 6: STT History ────────────────────────────────────────────────
+function addSttHistoryEntry(entry) {
+    sttHistory.unshift(entry);
+    renderSttHistory();
+    sttHistoryCard.style.display = 'block';
+}
+
+function renderSttHistory() {
+    sttHistoryList.innerHTML = '';
+    sttHistory.forEach((entry, idx) => {
+        const row = document.createElement('div');
+        row.className = 'history-entry stt-entry';
+
+        // Header row: audio filename + play button
+        const audioRow = document.createElement('div');
+        audioRow.className = 'stt-audio-row';
+
+        const audioInfo = document.createElement('span');
+        audioInfo.className = 'history-filename';
+        audioInfo.textContent = `🎵 ${entry.audioFilename}`;
+        audioInfo.title = entry.audioPath;
+
+        const ts = document.createElement('span');
+        ts.className = 'history-meta';
+        ts.textContent = entry.timestamp;
+
+        const playBtn = document.createElement('button');
+        playBtn.className = 'play-btn';
+        playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${translations[currentLang].play}</span>`;
+
+        playBtn.addEventListener('click', async () => {
+            if (playBtn.classList.contains('playing')) {
+                sttAudioPlayer.pause();
+                sttAudioPlayer.src = '';
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${translations[currentLang].play}</span>`;
+                currentlyPlayingSttBtn = null;
+                return;
+            }
+
+            if (currentlyPlayingSttBtn) {
+                sttAudioPlayer.pause();
+                sttAudioPlayer.src = '';
+                currentlyPlayingSttBtn.classList.remove('playing');
+                currentlyPlayingSttBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${translations[currentLang].play}</span>`;
+            }
+
+            playBtn.disabled = true;
+            const result = await window.electronAPI.getAudioBase64(entry.audioPath);
+            playBtn.disabled = false;
+            if (!result.success) {
+                showToast('Error al reproducir audio.', 'error');
+                return;
+            }
+
+            sttAudioPlayer.src = result.dataUrl;
+            sttAudioPlayer.play();
+            playBtn.classList.add('playing');
+            playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span>${translations[currentLang].stop}</span>`;
+            currentlyPlayingSttBtn = playBtn;
+
+            sttAudioPlayer.onended = () => {
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${translations[currentLang].play}</span>`;
+                currentlyPlayingSttBtn = null;
+            };
+        });
+
+        audioRow.appendChild(audioInfo);
+        audioRow.appendChild(ts);
+        audioRow.appendChild(playBtn);
+
+        // Transcription text preview
+        const textPreview = document.createElement('div');
+        textPreview.className = 'stt-text-preview';
+        const preview = entry.text ? entry.text.substring(0, 200) + (entry.text.length > 200 ? '…' : '') : '';
+        textPreview.textContent = preview;
+
+        row.appendChild(audioRow);
+        row.appendChild(textPreview);
+        sttHistoryList.appendChild(row);
+    });
+}
+
+clearSttHistoryBtn.addEventListener('click', () => {
+    sttAudioPlayer.pause();
+    sttAudioPlayer.src = '';
+    currentlyPlayingSttBtn = null;
+    sttHistory = [];
+    sttHistoryList.innerHTML = '';
+    sttHistoryCard.style.display = 'none';
+});
+
+// ─── Initialize ─────────────────────────────────────────────────────────────
 loadSettings();
-updateLanguage('es'); // default
+updateLanguage('es');
+initVersionCheck();

@@ -755,10 +755,233 @@ textarea {
   background: rgba(255, 255, 255, 0.07);
 }
 
-#authChevron {
+#authChevron, #settingsChevron {
   transition: transform 0.3s ease;
 }
 
-.auth-toggle-btn.collapsed #authChevron {
+.auth-toggle-btn.collapsed #authChevron,
+.auth-toggle-btn.collapsed #settingsChevron {
   transform: rotate(-90deg);
-}
+}
+
+/* ── Feature 2: Version & Update badges ── */
+.version-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.version-badge {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.update-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 3px 12px;
+  border-radius: 100px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+  animation: pulse-update 2s ease-in-out infinite;
+}
+
+.update-badge:hover {
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.update-badge.hidden {
+  display: none;
+}
+
+@keyframes pulse-update {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.3); }
+  50% { box-shadow: 0 0 0 5px rgba(251, 191, 36, 0); }
+}
+
+/* ── Feature 3: Clipboard paste button ── */
+.btn-clipboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  flex-shrink: 0;
+}
+
+.btn-clipboard svg {
+  flex-shrink: 0;
+}
+
+/* ── Feature 4: Editable textarea ── */
+textarea:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  color: var(--text-primary);
+}
+
+textarea {
+  cursor: text;
+}
+
+/* ── Features 5 & 6: History cards ── */
+.history-card {
+  animation: fadeIn 0.3s ease;
+}
+
+.history-card .card-header {
+  margin-bottom: 12px;
+}
+
+.clear-history-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px 7px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+  -webkit-app-region: no-drag;
+}
+
+.clear-history-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.history-entry {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.2s;
+}
+
+.history-entry:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.history-filename {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 360px;
+}
+
+.history-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.history-controls {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Play/Stop button */
+.play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #c4b5fd;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.play-btn:hover {
+  background: rgba(139, 92, 246, 0.25);
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+.play-btn.playing {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  animation: playing-pulse 1.5s ease-in-out infinite;
+}
+
+.play-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes playing-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0); }
+}
+
+/* STT history specific */
+.stt-entry {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.stt-audio-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stt-audio-row .history-filename {
+  flex: 1;
+}
+
+.stt-text-preview {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  word-break: break-word;
+}
+

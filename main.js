@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const packageInfo = require('./package.json');
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -25,6 +26,7 @@ function createWindow() {
   mainWindow.loadFile('index.html');
 
   mainWindow.once('ready-to-show', () => {
+    mainWindow.maximize();
     mainWindow.show();
   });
 }
@@ -39,6 +41,49 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
+});
+
+// IPC Handler: get current app version
+ipcMain.handle('get-app-version', () => {
+  return packageInfo.version;
+});
+
+// IPC Handler: check for updates via GitHub releases
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    const response = await fetch('https://api.github.com/repos/yaskad4/elevenlabs-gui/releases/latest', {
+      headers: { 'User-Agent': 'elevenlabs-gui-app' }
+    });
+    if (!response.ok) return { success: false };
+    const data = await response.json();
+    return { success: true, latestTag: data.tag_name, htmlUrl: data.html_url };
+  } catch (e) {
+    return { success: false };
+  }
+});
+
+// IPC Handler: save clipboard text to a temp file
+ipcMain.handle('save-temp-text', async (event, text) => {
+  try {
+    const tmpPath = path.join(app.getPath('temp'), `elevenlabs_clipboard_${Date.now()}.txt`);
+    fs.writeFileSync(tmpPath, text, 'utf8');
+    return { success: true, filePath: tmpPath };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+});
+
+// IPC Handler: read audio file as base64 for in-app playback
+ipcMain.handle('get-audio-base64', async (event, filePath) => {
+  try {
+    const buffer = fs.readFileSync(filePath);
+    const base64 = buffer.toString('base64');
+    const ext = path.extname(filePath).slice(1).toLowerCase();
+    const mime = ext === 'mp3' ? 'audio/mpeg' : ext === 'wav' ? 'audio/wav' : ext === 'm4a' ? 'audio/mp4' : 'audio/mpeg';
+    return { success: true, dataUrl: `data:${mime};base64,${base64}` };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 });
 
 // IPC Handler for text file selection
@@ -158,9 +203,9 @@ function splitTextIntoSentenceChunks(text, limit) {
 }
 
 // IPC Handler for API Call and Saving Audio
-ipcMain.handle('generate-audio', async (event, { filePath, apiKey, options }) => {
+ipcMain.handle('generate-audio', async (event, { filePath, textContent: directText, apiKey, options }) => {
   try {
-    let textContent = fs.readFileSync(filePath, 'utf8');
+    let textContent = directText !== undefined ? directText : fs.readFileSync(filePath, 'utf8');
 
     if (!textContent.trim()) {
       throw new Error("El archivo de texto está vacío.");
@@ -186,8 +231,16 @@ ipcMain.handle('generate-audio', async (event, { filePath, apiKey, options }) =>
     }
 
     const savedPaths = [];
-    const baseDir = path.dirname(filePath);
-    const fileName = path.basename(filePath, path.extname(filePath));
+    // Determine output dir and base name
+    let baseDir, fileName;
+    if (filePath) {
+      baseDir = path.dirname(filePath);
+      fileName = path.basename(filePath, path.extname(filePath));
+    } else {
+      // No filePath (clipboard text): save to Downloads with a timestamp name
+      baseDir = app.getPath('downloads');
+      fileName = `tts_${Date.now()}`;
+    }
 
     for (let i = 0; i < textChunks.length; i++) {
       const chunk = textChunks[i];

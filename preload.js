@@ -8,5 +8,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     transcribeAudio: (options) => ipcRenderer.invoke('transcribe-audio', options),
     fetchSubscription: (options) => ipcRenderer.invoke('fetch-subscription', options),
     openFolder: (folderPath) => ipcRenderer.invoke('open-folder', folderPath),
-    getFileInfo: (filePath) => ipcRenderer.invoke('get-file-info', filePath)
+    getFileInfo: (filePath) => ipcRenderer.invoke('get-file-info', filePath),
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+    saveTempText: (text) => ipcRenderer.invoke('save-temp-text', text),
+    getAudioBase64: (filePath) => ipcRenderer.invoke('get-audio-base64', filePath)
 });
