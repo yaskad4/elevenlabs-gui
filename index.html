@@ -28,7 +28,6 @@
     </header>
 
     <div class="cards-grid">
-      <!-- Settings Card -->
       <section class="glass-card settings-card">
         <div class="card-header">
           <div class="icon-box">
@@ -38,44 +37,51 @@
             </svg>
           </div>
           <h2 data-i18n="auth_title">Autenticación</h2>
+          <button id="authToggleBtn" class="auth-toggle-btn" title="Mostrar/Ocultar">
+            <svg id="authChevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
         </div>
-        <div class="input-group">
-          <label for="apiKey" data-i18n="api_key_label">Clave API ElevenLabs</label>
-          <input type="password" id="apiKey" value="" placeholder="sk_...">
-          <span class="helper-text" data-i18n="api_key_helper">Tu clave API se almacena localmente para esta
-            sesión.</span>
-        </div>
-
-        <!-- Quota Dashboard -->
-        <div id="quotaDashboard" class="quota-dashboard" style="display:none;">
-          <div class="quota-header">
-            <span class="quota-title" data-i18n="quota_title">Saldo de Créditos</span>
-            <button id="refreshQuotaBtn" class="quota-refresh-btn" title="Actualizar">&#8635;</button>
+        <div id="authBody">
+          <div class="input-group">
+            <label for="apiKey" data-i18n="api_key_label">Clave API ElevenLabs</label>
+            <input type="password" id="apiKey" value="" placeholder="sk_...">
+            <span class="helper-text" data-i18n="api_key_helper">Tu clave API se almacena localmente para esta
+              sesión.</span>
           </div>
-          <div id="quotaError" class="quota-error" style="display:none;"></div>
-          <div id="quotaContent">
-            <div class="quota-stats">
-              <div class="quota-stat">
-                <div class="quota-stat-label" data-i18n="quota_remaining">Restantes</div>
-                <div class="quota-stat-value" id="quotaUsed">—</div>
-              </div>
-              <div class="quota-divider"></div>
-              <div class="quota-stat">
-                <div class="quota-stat-label" data-i18n="quota_limit">Límite</div>
-                <div class="quota-stat-value" id="quotaLimit">—</div>
-              </div>
-              <div class="quota-divider"></div>
-              <div class="quota-stat">
-                <div class="quota-stat-label" data-i18n="quota_renewal">Renovación</div>
-                <div class="quota-stat-value" id="quotaRenewal">—</div>
-              </div>
+
+          <!-- Quota Dashboard -->
+          <div id="quotaDashboard" class="quota-dashboard" style="display:none;">
+            <div class="quota-header">
+              <span class="quota-title" data-i18n="quota_title">Saldo de Créditos</span>
+              <button id="refreshQuotaBtn" class="quota-refresh-btn" title="Actualizar">&#8635;</button>
             </div>
-            <div class="quota-bar-wrap">
-              <div class="quota-bar-fill" id="quotaBarFill"></div>
-            </div>
-            <div class="quota-tier" id="quotaTier"></div>
-          </div> <!-- end quotaContent -->
-        </div> <!-- end quotaDashboard -->
+            <div id="quotaError" class="quota-error" style="display:none;"></div>
+            <div id="quotaContent">
+              <div class="quota-stats">
+                <div class="quota-stat">
+                  <div class="quota-stat-label" data-i18n="quota_remaining">Restantes</div>
+                  <div class="quota-stat-value" id="quotaUsed">—</div>
+                </div>
+                <div class="quota-divider"></div>
+                <div class="quota-stat">
+                  <div class="quota-stat-label" data-i18n="quota_limit">Límite</div>
+                  <div class="quota-stat-value" id="quotaLimit">—</div>
+                </div>
+                <div class="quota-divider"></div>
+                <div class="quota-stat">
+                  <div class="quota-stat-label" data-i18n="quota_renewal">Renovación</div>
+                  <div class="quota-stat-value" id="quotaRenewal">—</div>
+                </div>
+              </div>
+              <div class="quota-bar-wrap">
+                <div class="quota-bar-fill" id="quotaBarFill"></div>
+              </div>
+              <div class="quota-tier" id="quotaTier"></div>
+            </div> <!-- end quotaContent -->
+          </div> <!-- end quotaDashboard -->
+        </div> <!-- end authBody -->
       </section>
 
       <!-- Tabs Navigation -->
@@ -239,7 +245,8 @@
           </div>
         </section>
 
-        <div class="action-area">
+        <div class="action-area" style="flex-direction: column; gap: 8px;">
+          <div id="sttCostBadge" class="cost-badge hidden"></div>
           <button id="transcribeBtn" class="btn-primary glow-effect" disabled>
             <span class="btn-text" data-i18n="transcribe_btn">Transcribir Audio</span>
             <div class="spinner" id="sttSpinner"></div>

@@ -17,6 +17,7 @@ const selectAudioBtn = document.getElementById('selectAudioBtn');
 const audioPathDisplay = document.getElementById('audioPathDisplay');
 const transcribeBtn = document.getElementById('transcribeBtn');
 const sttSpinner = document.getElementById('sttSpinner');
+const sttCostBadge = document.getElementById('sttCostBadge');
 const tabsNav = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -83,6 +84,7 @@ const translations = {
         quota_limit: "Límite",
         quota_renewal: "Renovación",
         cost_label: "Costo estimado de esta operación: {chars} créditos",
+        stt_cost_label: "Costo estimado de transcripción: ~{credits} créditos ({mins} min)",
         err_open: "Error al abrir archivo",
         err_drop: "Por favor suelta solo archivos .txt",
         err_drop_audio: "Por favor suelta un archivo de audio (.mp3, .wav, .m4a)",
@@ -123,6 +125,7 @@ const translations = {
         quota_limit: "Limit",
         quota_renewal: "Renewal",
         cost_label: "Estimated cost for this operation: {chars} credits",
+        stt_cost_label: "Estimated transcription cost: ~{credits} credits ({mins} min)",
         err_open: "Error opening file",
         err_drop: "Please drop only .txt files",
         err_drop_audio: "Please drop an audio file (.mp3, .wav, .m4a)",
@@ -360,6 +363,14 @@ async function loadAudioFile(filePath) {
     audioPathDisplay.textContent = fileName;
     audioPathDisplay.title = filePath;
     updateGenerateButtonStatus();
+
+    // Estimate cost from file size
+    try {
+        const info = await window.electronAPI.getFileInfo(filePath);
+        if (info && info.success) {
+            updateSttCostBadge(info.sizeBytes);
+        }
+    } catch (_) { /* ignore */ }
 }
 
 selectAudioBtn.addEventListener('click', async () => {
@@ -567,6 +578,9 @@ async function fetchAndUpdateQuota() {
 
             quotaError.style.display = 'none';
             quotaContent.style.display = 'block';
+
+            // Auto-collapse auth card on successful authentication
+            collapseAuthCard();
         } else {
             quotaContent.style.display = 'none';
             quotaError.style.display = 'block';
@@ -577,6 +591,50 @@ async function fetchAndUpdateQuota() {
         quotaError.style.display = 'block';
         quotaError.textContent = `Error: ${e.message}`;
     }
+}
+
+// Auth Card Collapse/Expand
+const authBody = document.getElementById('authBody');
+const authToggleBtn = document.getElementById('authToggleBtn');
+let authCollapsed = false;
+
+function collapseAuthCard() {
+    if (authCollapsed) return;
+    authCollapsed = true;
+    authBody.style.display = 'none';
+    authToggleBtn.classList.add('collapsed');
+}
+
+function expandAuthCard() {
+    authCollapsed = false;
+    authBody.style.display = 'block';
+    authToggleBtn.classList.remove('collapsed');
+}
+
+authToggleBtn.addEventListener('click', () => {
+    if (authCollapsed) {
+        expandAuthCard();
+    } else {
+        collapseAuthCard();
+    }
+});
+
+function updateSttCostBadge(sizeBytes) {
+    // Estimate duration: assume 128 kbps MP3 as a general baseline
+    // 128 kbps = 16000 bytes/s → seconds ≈ size / 16000
+    const estimatedSeconds = sizeBytes / 16000;
+    const estimatedMins = estimatedSeconds / 60;
+    // ElevenLabs Scribe: 1000 credits per minute
+    const estimatedCredits = Math.ceil(estimatedMins * 1000);
+    const minsDisplay = estimatedMins < 1
+        ? `< 1`
+        : estimatedMins.toFixed(1);
+
+    const label = translations[currentLang].stt_cost_label
+        .replace('{credits}', estimatedCredits.toLocaleString())
+        .replace('{mins}', minsDisplay);
+    sttCostBadge.textContent = label;
+    sttCostBadge.classList.remove('hidden');
 }
 
 function updateCostBadge(charCount) {

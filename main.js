@@ -5,7 +5,9 @@ const fs = require('fs');
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 900,
-    height: 850,
+    height: 820,
+    minWidth: 720,
+    minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -227,6 +229,16 @@ ipcMain.handle('generate-audio', async (event, { filePath, apiKey, options }) =>
 
   } catch (error) {
     console.error("Generate error:", error);
+    return { success: false, error: error.message };
+  }
+});
+
+// IPC Handler for getting file info (size) for cost estimation
+ipcMain.handle('get-file-info', async (event, filePath) => {
+  try {
+    const stats = fs.statSync(filePath);
+    return { success: true, sizeBytes: stats.size };
+  } catch (error) {
     return { success: false, error: error.message };
   }
 });

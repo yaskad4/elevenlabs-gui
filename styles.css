@@ -75,6 +75,7 @@ body {
   font-weight: 700;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 8px;
 }
@@ -728,3 +729,36 @@ textarea {
     transform: translateY(0);
   }
 }
+
+/* Auth Card Collapse */
+.card-header {
+  justify-content: flex-start;
+}
+
+.auth-toggle-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+  -webkit-app-region: no-drag;
+}
+
+.auth-toggle-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+#authChevron {
+  transition: transform 0.3s ease;
+}
+
+.auth-toggle-btn.collapsed #authChevron {
+  transform: rotate(-90deg);
+}
