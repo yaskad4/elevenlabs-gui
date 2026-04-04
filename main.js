@@ -112,6 +112,27 @@ ipcMain.handle('select-audio-file', async () => {
   return result.filePaths[0];
 });
 
+// IPC Handler for fetching ElevenLabs voices
+ipcMain.handle('fetch-voices', async (event, { apiKey }) => {
+  try {
+    const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+      method: 'GET',
+      headers: { 'xi-api-key': apiKey }
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail?.message || `HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    const voices = data.voices
+      .map(v => ({ voice_id: v.voice_id, name: v.name, category: v.category || '' }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return { success: true, voices };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 // IPC Handler for fetching ElevenLabs subscription info
 ipcMain.handle('fetch-subscription', async (event, { apiKey }) => {
   try {

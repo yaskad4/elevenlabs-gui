@@ -496,6 +496,25 @@ textarea {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* ── API Key footer ── */
+.api-key-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.api-key-footer .toggle-container {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.api-key-footer .helper-text {
+  text-align: right;
+}
+
 /* Top Controls (theme toggle + language switch) */
 .top-controls {
   position: absolute;
@@ -1003,6 +1022,59 @@ textarea {
   word-break: break-word;
 }
 
+/* ── Voice select row ── */
+.voice-select-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.voice-select-row .custom-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.fetch-voices-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  padding: 0 12px;
+  border-radius: 10px;
+  height: 46px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  -webkit-app-region: no-drag;
+}
+
+.fetch-voices-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.fetch-voices-btn svg {
+  transition: transform 0.3s;
+}
+
+.fetch-voices-btn.spinning svg {
+  animation: spin 0.8s linear infinite;
+}
+
+.fetch-voices-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.voices-status {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  opacity: 0.75;
+  min-height: 1em;
+}
+
 /* ── Light Theme ── */
 body.light {
   --bg-primary: #f0f0f2;
@@ -1112,6 +1184,15 @@ body.light .toast {
 
 body.light .toast-actions {
   border-left-color: rgba(0, 0, 0, 0.15);
+}
+
+body.light .fetch-voices-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light .fetch-voices-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 body.light .theme-toggle-btn {

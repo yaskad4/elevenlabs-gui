@@ -38,6 +38,8 @@ const customVoiceInput = document.getElementById('customVoiceInput');
 const langSwitch = document.getElementById('langSwitch');
 const themeToggleBtn = document.getElementById('themeToggleBtn');
 const themeIcon = document.getElementById('themeIcon');
+const fetchVoicesBtn = document.getElementById('fetchVoicesBtn');
+const voicesStatus = document.getElementById('voicesStatus');
 
 // Quota Dashboard Elements
 const quotaDashboard = document.getElementById('quotaDashboard');
@@ -82,7 +84,8 @@ const translations = {
         subtitle_stt: "Convierte de audio a texto usando ElevenLabs.",
         auth_title: "Autenticación",
         api_key_label: "Clave API ElevenLabs",
-        api_key_helper: "Tu clave API se almacena localmente para esta sesión.",
+        api_key_helper: "Solo para esta sesión si no guardas.",
+        save_api_key: "Guardar clave localmente",
         settings_title: "Ajustes de Voz",
         model_label: "Modelo",
         voice_label: "Voz",
@@ -126,7 +129,14 @@ const translations = {
         stop: "Detener",
         history_parts: "parte(s)",
         history_audio: "Audio fuente",
-        history_transcription: "Transcripción"
+        history_transcription: "Transcripción",
+        voice_placeholder: "-- Sincroniza tus voces --",
+        voice_custom: "-- Pegar ID Personalizado --",
+        voices_loading: "Cargando voces...",
+        voices_loaded: "{count} voces cargadas",
+        voices_cached: "{count} voces guardadas localmente",
+        voices_error: "Error al cargar voces",
+        voices_fetch_title: "Sincronizar mis voces de ElevenLabs"
     },
     en: {
         title: "Neural Synthesis",
@@ -135,7 +145,8 @@ const translations = {
         subtitle_stt: "Convert audio to text using ElevenLabs.",
         auth_title: "Authentication",
         api_key_label: "ElevenLabs API Key",
-        api_key_helper: "Your API key is stored locally for this session.",
+        api_key_helper: "Only for this session if not saved.",
+        save_api_key: "Save key locally",
         settings_title: "Voice Settings",
         model_label: "Model",
         voice_label: "Voice",
@@ -179,7 +190,14 @@ const translations = {
         stop: "Stop",
         history_parts: "part(s)",
         history_audio: "Source audio",
-        history_transcription: "Transcription"
+        history_transcription: "Transcription",
+        voice_placeholder: "-- Sync your voices --",
+        voice_custom: "-- Paste Custom ID --",
+        voices_loading: "Loading voices...",
+        voices_loaded: "{count} voices loaded",
+        voices_cached: "{count} voices saved locally",
+        voices_error: "Error loading voices",
+        voices_fetch_title: "Sync my ElevenLabs voices"
     }
 };
 
@@ -211,6 +229,73 @@ themeToggleBtn.addEventListener('click', () => {
     applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
 });
 
+// ── Voice management ──
+const VOICES_CACHE_KEY = 'cachedVoices';
+
+function populateVoiceSelect(voices) {
+    const currentVal = voiceSelect.value;
+    voiceSelect.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.disabled = true;
+    placeholder.textContent = translations[currentLang].voice_placeholder;
+    voiceSelect.appendChild(placeholder);
+
+    voices.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.voice_id;
+        opt.textContent = v.name;
+        voiceSelect.appendChild(opt);
+    });
+
+    const customOpt = document.createElement('option');
+    customOpt.value = 'custom';
+    customOpt.textContent = translations[currentLang].voice_custom;
+    voiceSelect.appendChild(customOpt);
+
+    // Restore previous selection if still valid
+    if (currentVal && [...voiceSelect.options].some(o => o.value === currentVal)) {
+        voiceSelect.value = currentVal;
+    } else {
+        voiceSelect.value = '';
+    }
+}
+
+// Load cached voices on startup
+const cachedVoices = JSON.parse(localStorage.getItem(VOICES_CACHE_KEY) || '[]');
+if (cachedVoices.length) {
+    populateVoiceSelect(cachedVoices);
+    voicesStatus.textContent = translations['es'].voices_cached.replace('{count}', cachedVoices.length);
+}
+
+fetchVoicesBtn.addEventListener('click', async () => {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+        showToast(translations[currentLang].err_key, 'error');
+        return;
+    }
+
+    fetchVoicesBtn.disabled = true;
+    fetchVoicesBtn.classList.add('spinning');
+    voicesStatus.textContent = translations[currentLang].voices_loading;
+
+    const result = await window.electronAPI.fetchVoices({ apiKey });
+
+    fetchVoicesBtn.disabled = false;
+    fetchVoicesBtn.classList.remove('spinning');
+
+    if (result.success) {
+        localStorage.setItem(VOICES_CACHE_KEY, JSON.stringify(result.voices));
+        populateVoiceSelect(result.voices);
+        voicesStatus.textContent = translations[currentLang].voices_loaded.replace('{count}', result.voices.length);
+        updateGenerateButtonStatus();
+    } else {
+        voicesStatus.textContent = translations[currentLang].voices_error;
+        showToast(`${translations[currentLang].voices_error}: ${result.error}`, 'error');
+    }
+});
+
 function updateLanguage(lang) {
     currentLang = lang;
     document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -222,6 +307,18 @@ function updateLanguage(lang) {
 
     if (!currentFilePath) {
         document.getElementById('filePathDisplay').textContent = translations[lang]['no_file'];
+    }
+
+    // Update voice select texts (dynamically created options)
+    const placeholderOpt = voiceSelect.querySelector('option[value=""]');
+    if (placeholderOpt) placeholderOpt.textContent = translations[lang].voice_placeholder;
+    const customOpt = voiceSelect.querySelector('option[value="custom"]');
+    if (customOpt) customOpt.textContent = translations[lang].voice_custom;
+
+    // Update voices status if showing a count
+    const cached = JSON.parse(localStorage.getItem(VOICES_CACHE_KEY) || '[]');
+    if (cached.length && voicesStatus.textContent) {
+        voicesStatus.textContent = translations[lang].voices_cached.replace('{count}', cached.length);
     }
 }
 
@@ -599,8 +696,24 @@ voiceSelect.addEventListener('change', updateGenerateButtonStatus);
 customVoiceInput.addEventListener('input', updateGenerateButtonStatus);
 
 // Options Saving logic
+const saveApiKeyToggle = document.getElementById('saveApiKeyToggle');
+
+// Load toggle preference
+saveApiKeyToggle.checked = localStorage.getItem('save_api_key_pref') === 'true';
+
+saveApiKeyToggle.addEventListener('change', () => {
+    localStorage.setItem('save_api_key_pref', saveApiKeyToggle.checked);
+    if (!saveApiKeyToggle.checked) {
+        localStorage.removeItem('elevenlabs_api_key');
+    } else if (apiKeyInput.value.trim()) {
+        localStorage.setItem('elevenlabs_api_key', apiKeyInput.value.trim());
+    }
+});
+
 function saveSettings() {
-    localStorage.setItem('elevenlabs_api_key', apiKeyInput.value.trim());
+    if (saveApiKeyToggle.checked) {
+        localStorage.setItem('elevenlabs_api_key', apiKeyInput.value.trim());
+    }
     localStorage.setItem('elevenlabs_voice_id', voiceSelect.value);
     if (voiceSelect.value === 'custom') {
         localStorage.setItem('elevenlabs_custom_voice', customVoiceInput.value.trim());
@@ -625,10 +738,12 @@ customVoiceInput.addEventListener('input', () => {
 });
 
 function loadSettings() {
-    const savedKey = localStorage.getItem('elevenlabs_api_key');
-    if (savedKey) {
-        apiKeyInput.value = savedKey;
-        fetchAndUpdateQuota();
+    if (saveApiKeyToggle.checked) {
+        const savedKey = localStorage.getItem('elevenlabs_api_key');
+        if (savedKey) {
+            apiKeyInput.value = savedKey;
+            fetchAndUpdateQuota();
+        }
     }
 
     const savedVoice = localStorage.getItem('elevenlabs_voice_id');

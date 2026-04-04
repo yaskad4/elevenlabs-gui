@@ -12,5 +12,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
     saveTempText: (text) => ipcRenderer.invoke('save-temp-text', text),
-    getAudioBase64: (filePath) => ipcRenderer.invoke('get-audio-base64', filePath)
+    getAudioBase64: (filePath) => ipcRenderer.invoke('get-audio-base64', filePath),
+    fetchVoices: (options) => ipcRenderer.invoke('fetch-voices', options)
 });

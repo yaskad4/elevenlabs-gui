@@ -60,8 +60,14 @@
           <div class="input-group">
             <label for="apiKey" data-i18n="api_key_label">Clave API ElevenLabs</label>
             <input type="password" id="apiKey" value="" placeholder="sk_...">
-            <span class="helper-text" data-i18n="api_key_helper">Tu clave API se almacena localmente para esta
-              sesión.</span>
+            <div class="api-key-footer">
+              <label class="toggle-container">
+                <input type="checkbox" id="saveApiKeyToggle">
+                <span class="custom-toggle"></span>
+                <span data-i18n="save_api_key">Guardar clave localmente</span>
+              </label>
+              <span class="helper-text" data-i18n="api_key_helper">Tu clave API se almacena localmente para esta sesión.</span>
+            </div>
           </div>
 
         </div> <!-- end authBody -->
@@ -143,16 +149,19 @@
 
             <div class="input-group">
               <label for="voiceSelect" data-i18n="voice_label">Voz</label>
-              <select id="voiceSelect" class="custom-select">
-                <option value="" selected disabled>-- Seleccione una voz --</option>
-                <option value="21m00Tcm4TlvDq8ikWAM">Rachel</option>
-                <option value="AZnzlk1XvdvUeBnXmlld">Domi</option>
-                <option value="EXAVITQu4vr4xnSDxMaL">Bella</option>
-                <option value="ErXwobaYiN019PkySvjV">Antoni</option>
-                <option value="MF3mGyEYCl7XYWbV9V6O">Elli</option>
-                <option value="TxGEqnHWrfWFTfGW9XjX">Josh</option>
-                <option value="custom">-- Pegar ID Personalizado --</option>
-              </select>
+              <div class="voice-select-row">
+                <select id="voiceSelect" class="custom-select">
+                  <option value="" selected disabled data-i18n="voice_placeholder">-- Sincroniza tus voces --</option>
+                  <option value="custom" data-i18n="voice_custom">-- Pegar ID Personalizado --</option>
+                </select>
+                <button id="fetchVoicesBtn" class="fetch-voices-btn" title="Sincronizar mis voces de ElevenLabs">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                  </svg>
+                </button>
+              </div>
+              <span id="voicesStatus" class="voices-status"></span>
               <input type="password" id="customVoiceInput" placeholder="Pega el ID de la Voz..."
                 style="display: none; margin-top: 8px;" class="custom-select">
             </div>
