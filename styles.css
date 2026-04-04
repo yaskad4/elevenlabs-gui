@@ -496,13 +496,34 @@ textarea {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Language Switch */
-.lang-switch-container {
+/* Top Controls (theme toggle + language switch) */
+.top-controls {
   position: absolute;
   top: 44px;
   right: 16px;
   z-index: 10000;
   -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .lang-select {
@@ -980,5 +1001,150 @@ textarea {
   padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   word-break: break-word;
+}
+
+/* ── Light Theme ── */
+body.light {
+  --bg-primary: #f0f0f2;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --border-card: rgba(0, 0, 0, 0.09);
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+}
+
+body.light .glass-card {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
+}
+
+body.light .glass-card:hover {
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+}
+
+body.light input[type="password"],
+body.light textarea,
+body.light .file-path-display {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+body.light .custom-select {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2318181b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+body.light .custom-select option,
+body.light .lang-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body.light .lang-select {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light .btn-secondary {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light .tabs-nav {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light .tab-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light .icon-box {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light .quota-divider {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+body.light .quota-bar-wrap {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light .quota-refresh-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light .quota-refresh-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light .history-entry {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.07);
+}
+
+body.light .stt-text-preview {
+  border-top-color: rgba(0, 0, 0, 0.07);
+}
+
+body.light .custom-slider {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+body.light .custom-toggle {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+body.light .custom-toggle::after {
+  background: var(--text-primary);
+}
+
+body.light .toast {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+body.light .toast-actions {
+  border-left-color: rgba(0, 0, 0, 0.15);
+}
+
+body.light .theme-toggle-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light .theme-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light .auth-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.light .version-badge {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light .char-count {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+body.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+body.light .input-card.drag-over {
+  background: rgba(139, 92, 246, 0.08);
 }
 
