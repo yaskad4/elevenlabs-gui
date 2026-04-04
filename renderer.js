@@ -625,11 +625,9 @@ refreshQuotaBtn.addEventListener('click', fetchAndUpdateQuota);
 async function fetchAndUpdateQuota() {
     const apiKey = apiKeyInput.value.trim();
     if (!apiKey) {
-        quotaDashboard.style.display = 'none';
         return;
     }
 
-    quotaDashboard.style.display = 'block';
     quotaError.style.display = 'none';
     quotaContent.style.display = 'block';
     quotaUsed.textContent = '…';

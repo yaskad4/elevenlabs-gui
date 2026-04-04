@@ -13,13 +13,18 @@ A cross-platform desktop application for ElevenLabs Text-to-Speech (TTS) and Spe
 - 🎧 **Speech to Text (STT)** — Transcribe audio files (MP3, WAV, M4A, FLAC) using ElevenLabs Scribe
 - 🎛️ **Voice & Model Selection** — Choose from popular voices or paste a custom Voice ID
 - ⚙️ **Fine-tuned Settings** — Adjust stability, similarity boost, style, and speaker boost
-- 📊 **Credit Dashboard** — See remaining credits, plan limit, and billing renewal date in real time
+- 📊 **Credit Dashboard** — Always-visible card showing remaining credits, plan limit, and billing renewal date
 - 💡 **Cost Estimation** — See the estimated credit cost before generating
 - 🌐 **Bilingual UI** — Full English / Spanish interface support
 - 🔒 **Secure** — API Key and Voice ID are masked and saved locally (localStorage), never hardcoded
 - 🗂️ **Smart Chunking** — Long texts are automatically split at sentence boundaries (5,000 char limit per chunk)
 - 🔤 **Phonetic Translation** — Optional conversion of acronyms to phonetic Spanish (e.g. MCP → emecepe)
 - 📁 **Drag & Drop** — Drag text or audio files directly onto the app window
+- 📋 **Paste from Clipboard** — Load text directly from the clipboard with one click
+- ✏️ **Editable Preview** — Edit the text directly in the preview area before generating
+- 🕓 **Session History** — TTS and STT results are listed during the session with inline playback and quick access to saved files
+- 🔔 **Auto-update Indicator** — The app checks for new releases on startup and shows a badge when an update is available
+- 🗂️ **Collapsible Panels** — Authentication and Voice Settings sections can be collapsed to save space
 
 ---
 

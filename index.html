@@ -59,37 +59,38 @@
               sesión.</span>
           </div>
 
-          <!-- Quota Dashboard -->
-          <div id="quotaDashboard" class="quota-dashboard" style="display:none;">
-            <div class="quota-header">
-              <span class="quota-title" data-i18n="quota_title">Saldo de Créditos</span>
-              <button id="refreshQuotaBtn" class="quota-refresh-btn" title="Actualizar">&#8635;</button>
-            </div>
-            <div id="quotaError" class="quota-error" style="display:none;"></div>
-            <div id="quotaContent">
-              <div class="quota-stats">
-                <div class="quota-stat">
-                  <div class="quota-stat-label" data-i18n="quota_remaining">Restantes</div>
-                  <div class="quota-stat-value" id="quotaUsed">—</div>
-                </div>
-                <div class="quota-divider"></div>
-                <div class="quota-stat">
-                  <div class="quota-stat-label" data-i18n="quota_limit">Límite</div>
-                  <div class="quota-stat-value" id="quotaLimit">—</div>
-                </div>
-                <div class="quota-divider"></div>
-                <div class="quota-stat">
-                  <div class="quota-stat-label" data-i18n="quota_renewal">Renovación</div>
-                  <div class="quota-stat-value" id="quotaRenewal">—</div>
-                </div>
-              </div>
-              <div class="quota-bar-wrap">
-                <div class="quota-bar-fill" id="quotaBarFill"></div>
-              </div>
-              <div class="quota-tier" id="quotaTier"></div>
-            </div> <!-- end quotaContent -->
-          </div> <!-- end quotaDashboard -->
         </div> <!-- end authBody -->
+      </section>
+
+      <!-- Quota Dashboard -->
+      <section class="glass-card quota-dashboard" id="quotaDashboard">
+        <div class="quota-header">
+          <span class="quota-title" data-i18n="quota_title">Saldo de Créditos</span>
+          <button id="refreshQuotaBtn" class="quota-refresh-btn" title="Actualizar">&#8635;</button>
+        </div>
+        <div id="quotaError" class="quota-error" style="display:none;"></div>
+        <div id="quotaContent">
+          <div class="quota-stats">
+            <div class="quota-stat">
+              <div class="quota-stat-label" data-i18n="quota_remaining">Restantes</div>
+              <div class="quota-stat-value" id="quotaUsed">—</div>
+            </div>
+            <div class="quota-divider"></div>
+            <div class="quota-stat">
+              <div class="quota-stat-label" data-i18n="quota_limit">Límite</div>
+              <div class="quota-stat-value" id="quotaLimit">—</div>
+            </div>
+            <div class="quota-divider"></div>
+            <div class="quota-stat">
+              <div class="quota-stat-label" data-i18n="quota_renewal">Renovación</div>
+              <div class="quota-stat-value" id="quotaRenewal">—</div>
+            </div>
+          </div>
+          <div class="quota-bar-wrap">
+            <div class="quota-bar-fill" id="quotaBarFill"></div>
+          </div>
+          <div class="quota-tier" id="quotaTier"></div>
+        </div>
       </section>
 
       <!-- Tabs Navigation -->
