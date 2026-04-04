@@ -22,14 +22,15 @@ jobs:
 
       - name: Compilar para Windows
         run: npm run build:win
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Subir instalador Windows
+      - name: Subir artefactos Windows
         uses: actions/upload-artifact@v4
         with:
           name: Windows-Installer
-          path: dist/*.exe
+          path: |
+            dist/*.exe
+            dist/*.exe.blockmap
+            dist/latest.yml
 
   build-linux:
     runs-on: ubuntu-latest
@@ -47,14 +48,15 @@ jobs:
 
       - name: Compilar para Linux
         run: npm run build:linux
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Subir AppImage Linux
+      - name: Subir artefactos Linux
         uses: actions/upload-artifact@v4
         with:
-          name: Linux-AppImage
-          path: dist/*.AppImage
+          name: Linux-Packages
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/latest-linux.yml
 
   release:
     needs: [build-windows, build-linux]

@@ -1,6 +1,6 @@
 {
   "name": "eleven-gui",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Premium ElevenLabs Text-to-Speech Application",
   "main": "main.js",
   "scripts": {
