@@ -13,5 +13,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
     saveTempText: (text) => ipcRenderer.invoke('save-temp-text', text),
     getAudioBase64: (filePath) => ipcRenderer.invoke('get-audio-base64', filePath),
-    fetchVoices: (options) => ipcRenderer.invoke('fetch-voices', options)
+    fetchVoices: (options) => ipcRenderer.invoke('fetch-voices', options),
+    selectFolder: () => ipcRenderer.invoke('select-folder')
 });

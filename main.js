@@ -3,8 +3,16 @@ const path = require('path');
 const fs = require('fs');
 const packageInfo = require('./package.json');
 
+// Single instance lock: if another instance is already running, focus it and exit this one
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.exit(0);
+}
+
+let mainWindow = null;
+
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 820,
     minWidth: 720,
@@ -29,7 +37,19 @@ function createWindow() {
     mainWindow.maximize();
     mainWindow.show();
   });
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 }
+
+// If a second instance tries to launch, focus the existing window
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
 
 app.whenReady().then(() => {
   createWindow();
@@ -41,6 +61,18 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
+});
+
+// Ensure the process actually exits — fallback for zombie processes
+app.on('before-quit', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.removeAllListeners('close');
+    mainWindow.close();
+  }
+});
+
+app.on('quit', () => {
+  process.exit(0);
 });
 
 // IPC Handler: get current app version
@@ -96,6 +128,15 @@ ipcMain.handle('select-file', async () => {
   if (result.canceled || result.filePaths.length === 0) {
     return null;
   }
+  return result.filePaths[0];
+});
+
+// IPC Handler for output folder selection
+ipcMain.handle('select-folder', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory', 'createDirectory']
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
   return result.filePaths[0];
 });
 
@@ -224,7 +265,7 @@ function splitTextIntoSentenceChunks(text, limit) {
 }
 
 // IPC Handler for API Call and Saving Audio
-ipcMain.handle('generate-audio', async (event, { filePath, textContent: directText, apiKey, options }) => {
+ipcMain.handle('generate-audio', async (event, { filePath, textContent: directText, apiKey, options, outputDir }) => {
   try {
     let textContent = directText !== undefined ? directText : fs.readFileSync(filePath, 'utf8');
 
@@ -254,11 +295,13 @@ ipcMain.handle('generate-audio', async (event, { filePath, textContent: directTe
     const savedPaths = [];
     // Determine output dir and base name
     let baseDir, fileName;
-    if (filePath) {
+    if (outputDir) {
+      baseDir = outputDir;
+      fileName = filePath ? path.basename(filePath, path.extname(filePath)) : `tts_${Date.now()}`;
+    } else if (filePath) {
       baseDir = path.dirname(filePath);
       fileName = path.basename(filePath, path.extname(filePath));
     } else {
-      // No filePath (clipboard text): save to Downloads with a timestamp name
       baseDir = app.getPath('downloads');
       fileName = `tts_${Date.now()}`;
     }
@@ -318,7 +361,7 @@ ipcMain.handle('get-file-info', async (event, filePath) => {
 });
 
 // IPC Handler for STT (Transcribe Audio)
-ipcMain.handle('transcribe-audio', async (event, { filePath, apiKey }) => {
+ipcMain.handle('transcribe-audio', async (event, { filePath, apiKey, outputDir }) => {
   try {
     const API_URL = "https://api.elevenlabs.io/v1/speech-to-text";
 
@@ -360,7 +403,7 @@ ipcMain.handle('transcribe-audio', async (event, { filePath, apiKey }) => {
     }
 
     // Save standard output as .txt
-    const baseDir = path.dirname(filePath);
+    const baseDir = outputDir || path.dirname(filePath);
     const fileName = path.basename(filePath, path.extname(filePath));
     const finalPath = path.join(baseDir, `${fileName}_transcription.txt`);
 

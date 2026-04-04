@@ -496,6 +496,76 @@ textarea {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* ── Output folder selector ── */
+.output-folder-row {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-card);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.output-folder-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.output-folder-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.output-folder-path {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  padding: 7px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.output-folder-path.custom {
+  color: #c4b5fd;
+  border-color: rgba(139, 92, 246, 0.25);
+  background: rgba(139, 92, 246, 0.06);
+}
+
+.output-folder-clear {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.output-folder-clear:hover {
+  color: #ef4444;
+}
+
+.output-folder-clear.hidden {
+  display: none;
+}
+
+body.light .output-folder-path {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
 /* ── API Key footer ── */
 .api-key-footer {
   display: flex;

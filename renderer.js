@@ -41,6 +41,14 @@ const themeIcon = document.getElementById('themeIcon');
 const fetchVoicesBtn = document.getElementById('fetchVoicesBtn');
 const voicesStatus = document.getElementById('voicesStatus');
 
+// Output folder elements
+const ttsOutputDirEl = document.getElementById('ttsOutputDir');
+const selectTtsOutputBtn = document.getElementById('selectTtsOutputBtn');
+const clearTtsOutputBtn = document.getElementById('clearTtsOutputBtn');
+const sttOutputDirEl = document.getElementById('sttOutputDir');
+const selectSttOutputBtn = document.getElementById('selectSttOutputBtn');
+const clearSttOutputBtn = document.getElementById('clearSttOutputBtn');
+
 // Quota Dashboard Elements
 const quotaDashboard = document.getElementById('quotaDashboard');
 const quotaUsed = document.getElementById('quotaUsed');
@@ -136,7 +144,10 @@ const translations = {
         voices_loaded: "{count} voces cargadas",
         voices_cached: "{count} voces guardadas localmente",
         voices_error: "Error al cargar voces",
-        voices_fetch_title: "Sincronizar mis voces de ElevenLabs"
+        voices_fetch_title: "Sincronizar mis voces de ElevenLabs",
+        output_folder_label: "Carpeta de salida",
+        output_folder_btn: "Cambiar",
+        output_folder_default: "Misma carpeta del archivo fuente"
     },
     en: {
         title: "Neural Synthesis",
@@ -197,7 +208,10 @@ const translations = {
         voices_loaded: "{count} voices loaded",
         voices_cached: "{count} voices saved locally",
         voices_error: "Error loading voices",
-        voices_fetch_title: "Sync my ElevenLabs voices"
+        voices_fetch_title: "Sync my ElevenLabs voices",
+        output_folder_label: "Output folder",
+        output_folder_btn: "Change",
+        output_folder_default: "Same folder as source file"
     }
 };
 
@@ -296,6 +310,56 @@ fetchVoicesBtn.addEventListener('click', async () => {
     }
 });
 
+// ── Output folder logic ──
+let ttsOutputDir = localStorage.getItem('tts_output_dir') || null;
+let sttOutputDir = localStorage.getItem('stt_output_dir') || null;
+
+function applyOutputDir(el, clearBtn, dir, lang) {
+    if (dir) {
+        el.textContent = dir;
+        el.classList.add('custom');
+        clearBtn.classList.remove('hidden');
+    } else {
+        el.textContent = translations[lang].output_folder_default;
+        el.classList.remove('custom');
+        clearBtn.classList.add('hidden');
+    }
+}
+
+// Apply saved dirs on startup
+applyOutputDir(ttsOutputDirEl, clearTtsOutputBtn, ttsOutputDir, 'es');
+applyOutputDir(sttOutputDirEl, clearSttOutputBtn, sttOutputDir, 'es');
+
+selectTtsOutputBtn.addEventListener('click', async () => {
+    const folder = await window.electronAPI.selectFolder();
+    if (folder) {
+        ttsOutputDir = folder;
+        localStorage.setItem('tts_output_dir', folder);
+        applyOutputDir(ttsOutputDirEl, clearTtsOutputBtn, folder, currentLang);
+    }
+});
+
+clearTtsOutputBtn.addEventListener('click', () => {
+    ttsOutputDir = null;
+    localStorage.removeItem('tts_output_dir');
+    applyOutputDir(ttsOutputDirEl, clearTtsOutputBtn, null, currentLang);
+});
+
+selectSttOutputBtn.addEventListener('click', async () => {
+    const folder = await window.electronAPI.selectFolder();
+    if (folder) {
+        sttOutputDir = folder;
+        localStorage.setItem('stt_output_dir', folder);
+        applyOutputDir(sttOutputDirEl, clearSttOutputBtn, folder, currentLang);
+    }
+});
+
+clearSttOutputBtn.addEventListener('click', () => {
+    sttOutputDir = null;
+    localStorage.removeItem('stt_output_dir');
+    applyOutputDir(sttOutputDirEl, clearSttOutputBtn, null, currentLang);
+});
+
 function updateLanguage(lang) {
     currentLang = lang;
     document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -320,6 +384,10 @@ function updateLanguage(lang) {
     if (cached.length && voicesStatus.textContent) {
         voicesStatus.textContent = translations[lang].voices_cached.replace('{count}', cached.length);
     }
+
+    // Update output folder default text if no custom dir set
+    if (!ttsOutputDir) ttsOutputDirEl.textContent = translations[lang].output_folder_default;
+    if (!sttOutputDir) sttOutputDirEl.textContent = translations[lang].output_folder_default;
 }
 
 langSwitch.addEventListener('change', (e) => {
@@ -529,9 +597,10 @@ generateBtn.addEventListener('click', async () => {
     try {
         const result = await window.electronAPI.generateAudio({
             filePath: currentFilePath,
-            textContent: textContent,     // Feature 4: pass edited text directly
+            textContent: textContent,
             apiKey: apiKey,
-            options: options
+            options: options,
+            outputDir: ttsOutputDir || null
         });
 
         if (result.success) {
@@ -641,7 +710,8 @@ transcribeBtn.addEventListener('click', async () => {
     try {
         const result = await window.electronAPI.transcribeAudio({
             filePath: currentAudioPath,
-            apiKey: apiKey
+            apiKey: apiKey,
+            outputDir: sttOutputDir || null
         });
 
         if (result.success) {

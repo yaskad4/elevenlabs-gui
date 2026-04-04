@@ -199,6 +199,19 @@
             </label>
           </div>
           </div> <!-- end settingsBody -->
+
+          <!-- TTS Output folder (outside collapsible body) -->
+          <div class="output-folder-row">
+            <div class="output-folder-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <span data-i18n="output_folder_label">Carpeta de salida</span>
+            </div>
+            <div class="output-folder-path-row">
+              <span id="ttsOutputDir" class="output-folder-path" data-i18n="output_folder_default">Misma carpeta del archivo fuente</span>
+              <button id="selectTtsOutputBtn" class="btn-secondary small-btn" data-i18n="output_folder_btn">Cambiar</button>
+              <button id="clearTtsOutputBtn" class="output-folder-clear hidden" title="Restablecer">✕</button>
+            </div>
+          </div>
         </section>
 
         <!-- Input Card -->
@@ -296,6 +309,18 @@
               <span data-i18n="choose_audio">Elegir archivo (MP3, WAV, M4A)</span>
             </button>
             <div class="file-path-display" id="audioPathDisplay" data-i18n="no_file">Ningún archivo seleccionado</div>
+          </div>
+          <!-- STT Output folder -->
+          <div class="output-folder-row">
+            <div class="output-folder-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <span data-i18n="output_folder_label">Carpeta de salida</span>
+            </div>
+            <div class="output-folder-path-row">
+              <span id="sttOutputDir" class="output-folder-path" data-i18n="output_folder_default">Misma carpeta del archivo fuente</span>
+              <button id="selectSttOutputBtn" class="btn-secondary small-btn" data-i18n="output_folder_btn">Cambiar</button>
+              <button id="clearSttOutputBtn" class="output-folder-clear hidden" title="Restablecer">✕</button>
+            </div>
           </div>
         </section>
 
