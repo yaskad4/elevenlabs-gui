@@ -21,7 +21,7 @@ jobs:
         run: npm install
 
       - name: Compilar para Windows
-        run: npm run build:win
+        run: npx electron-builder --win --publish never
 
       - name: Subir artefactos Windows
         uses: actions/upload-artifact@v4
@@ -47,7 +47,7 @@ jobs:
         run: npm install
 
       - name: Compilar para Linux
-        run: npm run build:linux
+        run: npx electron-builder --linux --publish never
 
       - name: Subir artefactos Linux
         uses: actions/upload-artifact@v4
