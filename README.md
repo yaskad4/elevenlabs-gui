@@ -25,6 +25,9 @@ A cross-platform desktop application for ElevenLabs Text-to-Speech (TTS) and Spe
 - 🕓 **Session History** — TTS and STT results are listed during the session with inline playback and quick access to saved files
 - 🔔 **Auto-update Indicator** — The app checks for new releases on startup and shows a badge when an update is available
 - 🗂️ **Collapsible Panels** — Authentication and Voice Settings sections can be collapsed to save space
+- 🎨 **Light / Dark Theme** — Toggle between light and dark mode from the interface
+- 💾 **Optional API Key Save** — Choose whether to save your API key locally or keep it session-only
+- 📂 **Custom Output Folder** — Select any destination folder for generated audio and transcription files
 
 ---
 
@@ -74,6 +77,9 @@ When creating your ElevenLabs API Key, enable only these permissions:
 | Text to Speech | Access |
 | Speech to Text | Access |
 | User | Read |
+| Voices | Read |
+
+> ⚠️ **The `Voices - Read` permission is required** to load your voice list automatically. Without it, you can still use a custom Voice ID by pasting it manually.
 
 ---
 
