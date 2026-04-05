@@ -60,19 +60,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') app.quit();
-});
-
-// Ensure the process actually exits — fallback for zombie processes
-app.on('before-quit', () => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.removeAllListeners('close');
-    mainWindow.close();
-  }
-});
-
-app.on('quit', () => {
-  process.exit(0);
+  if (process.platform !== 'darwin') app.exit(0);
 });
 
 // IPC Handler: get current app version

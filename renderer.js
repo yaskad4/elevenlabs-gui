@@ -147,7 +147,8 @@ const translations = {
         voices_fetch_title: "Sincronizar mis voces de ElevenLabs",
         output_folder_label: "Carpeta de salida",
         output_folder_btn: "Cambiar",
-        output_folder_default: "Misma carpeta del archivo fuente"
+        output_folder_default: "Misma carpeta del archivo fuente",
+        open_in_explorer: "Abrir en explorador"
     },
     en: {
         title: "Neural Synthesis",
@@ -211,7 +212,8 @@ const translations = {
         voices_fetch_title: "Sync my ElevenLabs voices",
         output_folder_label: "Output folder",
         output_folder_btn: "Change",
-        output_folder_default: "Same folder as source file"
+        output_folder_default: "Same folder as source file",
+        open_in_explorer: "Open in explorer"
     }
 };
 
@@ -1094,6 +1096,17 @@ function renderTtsHistory() {
             controls.appendChild(playBtn);
         });
 
+        // Open folder button
+        const folderBtn = document.createElement('button');
+        folderBtn.className = 'folder-btn';
+        folderBtn.title = translations[currentLang].open_in_explorer;
+        folderBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+        folderBtn.addEventListener('click', () => {
+            const targetPath = entry.paths && entry.paths[0] ? entry.paths[0] : entry.filename;
+            window.electronAPI.openFolder(targetPath);
+        });
+        controls.appendChild(folderBtn);
+
         row.appendChild(info);
         row.appendChild(controls);
         ttsHistoryList.appendChild(row);
@@ -1177,9 +1190,18 @@ function renderSttHistory() {
             };
         });
 
+        const sttFolderBtn = document.createElement('button');
+        sttFolderBtn.className = 'folder-btn';
+        sttFolderBtn.title = translations[currentLang].open_in_explorer;
+        sttFolderBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+        sttFolderBtn.addEventListener('click', () => {
+            window.electronAPI.openFolder(entry.transcriptionPath || entry.audioPath);
+        });
+
         audioRow.appendChild(audioInfo);
         audioRow.appendChild(ts);
         audioRow.appendChild(playBtn);
+        audioRow.appendChild(sttFolderBtn);
 
         // Transcription text preview
         const textPreview = document.createElement('div');

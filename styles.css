@@ -1065,6 +1065,36 @@ textarea {
   50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0); }
 }
 
+/* Folder button in history entries */
+.folder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.folder-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.light .folder-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light .folder-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
 /* STT history specific */
 .stt-entry {
   flex-direction: column;
