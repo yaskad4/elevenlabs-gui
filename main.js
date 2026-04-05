@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
 const packageInfo = require('./package.json');
 
 // Single instance lock: if another instance is already running, focus it and exit this one
@@ -60,7 +61,18 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') app.exit(0);
+  if (process.platform !== 'darwin') app.quit();
+});
+
+// On Windows, kill the entire process tree (GPU, renderer helpers, etc.)
+// to prevent ghost processes from blocking the next launch
+app.on('before-quit', () => {
+  if (process.platform === 'win32') {
+    spawn('taskkill', ['/F', '/T', '/PID', process.pid.toString()], {
+      detached: true,
+      stdio: 'ignore'
+    }).unref();
+  }
 });
 
 // IPC Handler: get current app version
